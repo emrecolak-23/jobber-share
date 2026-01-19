@@ -1,7 +1,9 @@
 {
   "version": "0.0.2",
   "license": "MIT",
-  "main": "index.js",
+  "main": "build/cjs/index.js",
+  "module": "build/esm/index.js",
+  "types": "build/src/index.d.ts",
   "description": "Helpers library for Jobber app",
   "engines": {
     "node": ">=18"
@@ -33,15 +35,11 @@
   ],
   "exports": {
     ".": {
-      "import": "./src/index.js",
-      "require": "./src/index.js"
-    },
-    "./icons": {
-      "import": "./esm/icons/index.js",
-      "require": "./cjs/icons/index.js"
+      "import": "./build/esm/index.js",
+      "require": "./build/cjs/index.js",
+      "types": "./build/src/index.d.ts"
     }
   },
-  "types": "./src/index.d.ts",
   "dependencies": {
     "@elastic/elasticsearch": "^9.2.0",
     "cloudinary": "^2.9.0",
