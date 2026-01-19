@@ -14,4 +14,7 @@ packageJson.exports = {
   },
 };
 
+// files alanını build klasörü için güncelle
+packageJson.files = ['cjs', 'esm', 'src'];
+
 writeFileSync('build/package.json', JSON.stringify(packageJson, null, 2));
