@@ -90,6 +90,7 @@ export {
   FileTooLargeError,
   ServerError,
   ErrnoException,
+  IErrorResponse,
 } from './error-handler';
 
 export { verifyGatewayRequest } from './gateway-middleware';
