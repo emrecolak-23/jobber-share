@@ -25,31 +25,37 @@ export async function verifyGatewayRequest(
   _res: Response,
   next: NextFunction
 ): Promise<void> {
-  const token = extractToken(req);
-
   try {
+    const token = extractToken(req);
     const payload = (await verifyToken(token)) as GatewayTokenPayload;
     validateServiceAccess(payload);
-
+    next();
   } catch (error) {
-    handleError(error);
+    const handledError = handleError(error);
+    next(handledError);
   }
-  next();
-
 }
 
 function extractToken(req: Request): string {
+  const headerValue = req.headers?.[GATEWAY_TOKEN_HEADER] || 
+                      req.headers?.[GATEWAY_TOKEN_HEADER.toLowerCase()] ||
+                      req.headers?.['x-gateway-token'] ||
+                      req.headers?.['x-gatewaytoken'];
   
-  if (!req.headers?.[GATEWAY_TOKEN_HEADER]) {
+  if (!headerValue) {
+    const headerKeys = Object.keys(req.headers || {});
+    const relevantHeaders = headerKeys.filter(key => 
+      key.toLowerCase().includes('gateway') || key.toLowerCase().includes('token')
+    );
     throw new NotAuthorizedError(
       'Invalid request',
-      'verifyGatewayRequest() method: Request not coming from api gateway without gateway token header'
+      `verifyGatewayRequest() method: Request not coming from api gateway without gateway token header. Available headers: ${headerKeys.join(', ')}`
     );
   }
 
-  const token: string = req.headers?.[GATEWAY_TOKEN_HEADER] as string;
+  const token: string = (typeof headerValue === 'string' ? headerValue : Array.isArray(headerValue) ? headerValue[0] : String(headerValue)) as string;
 
-  if (!token) {
+  if (!token || token.trim() === '') {
     throw new NotAuthorizedError(
       'Invalid request',
       'verifyGatewayRequest() method: Request not coming from api gateway without gateway token'
@@ -90,14 +96,13 @@ function validateServiceAccess(payload: GatewayTokenPayload): void {
   }
 }
 
-function handleError(error: unknown): never {
-  const errorMessage =
-    error instanceof CustomError ? error.message : 'Unknown error';
-  const comingFrom = error instanceof CustomError ? error.comingFrom || '' : '';
-
-  if (error instanceof NotAuthorizedError) {
-    throw error;
+function handleError(error: unknown): CustomError {
+  if (error instanceof CustomError) {
+    return error;
   }
 
-  throw new NotAuthorizedError(errorMessage, comingFrom);
+  const errorMessage =
+    error instanceof Error ? error.message : 'Unknown error';
+  
+  return new NotAuthorizedError(errorMessage, 'verifyGatewayRequest() method: Unknown error');
 }
