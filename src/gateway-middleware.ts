@@ -13,7 +13,7 @@ const ALLOWED_SERVICES: string[] = [
   'review',
 ];
 
-const GATEWAY_TOKEN_HEADER = 'x-gateway-token';
+const GATEWAY_TOKEN_HEADER = 'gatewayToken';
 
 export interface GatewayTokenPayload {
   id: string;
@@ -22,7 +22,7 @@ export interface GatewayTokenPayload {
 
 export async function verifyGatewayRequest(
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): Promise<void> {
   const token = extractToken(req);
@@ -31,10 +31,11 @@ export async function verifyGatewayRequest(
     const payload = (await verifyToken(token)) as GatewayTokenPayload;
     validateServiceAccess(payload);
 
-    next();
   } catch (error) {
     handleError(error);
   }
+  next();
+
 }
 
 function extractToken(req: Request): string {
@@ -61,7 +62,7 @@ async function verifyToken(token: string): Promise<string | JWT.JwtPayload> {
   try {
     const payload: GatewayTokenPayload = (await JWT.verify(
       token,
-      ''
+      '942421d626948ab10f6809824d95020d'
     )) as GatewayTokenPayload;
     return payload;
   } catch (error) {
