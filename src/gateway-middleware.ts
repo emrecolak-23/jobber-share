@@ -39,10 +39,11 @@ export async function verifyGatewayRequest(
 }
 
 function extractToken(req: Request): string {
+  
   if (!req.headers?.[GATEWAY_TOKEN_HEADER]) {
     throw new NotAuthorizedError(
       'Invalid request',
-      'verifyGatewayRequest() method: Request not coming from api gateway'
+      'verifyGatewayRequest() method: Request not coming from api gateway without gateway token header'
     );
   }
 
@@ -51,7 +52,7 @@ function extractToken(req: Request): string {
   if (!token) {
     throw new NotAuthorizedError(
       'Invalid request',
-      'verifyGatewayRequest() method: Request not coming from api gateway'
+      'verifyGatewayRequest() method: Request not coming from api gateway without gateway token'
     );
   }
 
@@ -75,7 +76,7 @@ async function verifyToken(token: string): Promise<string | JWT.JwtPayload> {
 
     throw new NotAuthorizedError(
       'Invalid request',
-      'verifyGatewayRequest() method: Request not coming from api gateway'
+      'verifyGatewayRequest() method: Request not coming from api gateway without valid gateway token'
     );
   }
 }
