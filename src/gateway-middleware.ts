@@ -13,7 +13,7 @@ const ALLOWED_SERVICES: string[] = [
   'review',
 ];
 
-const GATEWAY_TOKEN_HEADER = 'gatewayToken';
+const GATEWAY_TOKEN_HEADER = 'x-gateway-token';
 
 export interface GatewayTokenPayload {
   id: string;
@@ -37,19 +37,24 @@ export async function verifyGatewayRequest(
 }
 
 function extractToken(req: Request): string {
-  const headerValue = req.headers?.[GATEWAY_TOKEN_HEADER] || 
-                      req.headers?.[GATEWAY_TOKEN_HEADER.toLowerCase()] ||
-                      req.headers?.['x-gateway-token'] ||
-                      req.headers?.['x-gatewaytoken'];
+  // Express normalizes headers to lowercase, so check lowercase version
+  const headerValue = req.headers?.[GATEWAY_TOKEN_HEADER.toLowerCase()] || 
+                      req.headers?.[GATEWAY_TOKEN_HEADER] ||
+                      req.headers?.['gatewaytoken'] ||
+                      req.headers?.['gateway-token'];
   
   if (!headerValue) {
     const headerKeys = Object.keys(req.headers || {});
     const relevantHeaders = headerKeys.filter(key => 
       key.toLowerCase().includes('gateway') || key.toLowerCase().includes('token')
     );
+    console.log('Request headers:', req.headers);
+    console.log('Looking for header:', GATEWAY_TOKEN_HEADER);
+    console.log('Available headers:', headerKeys);
+    console.log('Relevant headers:', relevantHeaders);
     throw new NotAuthorizedError(
       'Invalid request',
-      `verifyGatewayRequest() method: Request not coming from api gateway without gateway token header. Available headers: ${headerKeys.join(', ')}`
+      `verifyGatewayRequest() method: Request not coming from api gateway without gateway token header. Looking for: ${GATEWAY_TOKEN_HEADER}. Available headers: ${headerKeys.join(', ')}`
     );
   }
 
